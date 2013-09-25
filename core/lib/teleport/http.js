@@ -919,7 +919,7 @@ apf.http = function(){
      *                               the request times out. Default is 3.
      */
     this.retryTimeout = function(extra, state, amlNode, oError, maxRetries){
-        if (state == apf.TIMEOUT
+        if ((state == apf.TIMEOUT || extra.status == 502)
           && extra.retries < (maxRetries || apf.maxHttpRetries))
             return extra.tpModule.retry(extra.id);
 
