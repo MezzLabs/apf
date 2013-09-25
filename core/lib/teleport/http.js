@@ -985,9 +985,17 @@ apf.http = function(){
      *
      * @param {Number} id The id of the call that should be retried.
      */
-    this.retry = function(id){
+    this.retry = function(id, force){
         if (!this.queue[id])
             return false;
+
+        if (!force) {
+            var _self = this;
+            setTimeout(function(){
+              _self.retry(id, true);
+            }, 1000);
+            return;
+        }
 
         var qItem = this.queue[id];
 
