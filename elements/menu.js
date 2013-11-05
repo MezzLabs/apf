@@ -117,7 +117,7 @@ apf.menu = function(struct, tagName){
         else {
             this.$ext.style.display = "none";
 
-            var lastFocus = apf.menu.lastFocus;
+            var lastFocus = apf.menu.lastFocussed;
             var opener    = this.opener;
             //@todo test this with a list being the opener of the menu
             if (lastFocus != this.opener && this.opener && this.opener.$blur)
@@ -138,7 +138,7 @@ apf.menu = function(struct, tagName){
                     this.$blur();
 
                     if (apf.window.$settingFocus.localName != "menu") //not menu walking
-                        apf.menu.lastFocus = null;
+                        apf.menu.lastFocussed = null;
                 }
                 //We're being hidden because window looses focus
                 //#ifdef __WITH_WINDOW_FOCUS
@@ -159,7 +159,8 @@ apf.menu = function(struct, tagName){
                     if (!this.$hideTree)
                         this.$hideTree = -1
 
-                    var visTest = (lastFocus.disabled || !lastFocus.visible)
+                    var visTest = (lastFocus.disabled || lastFocus.$ext 
+                        && !lastFocus.$ext.offsetHeight) // || !lastFocus.visible
                         && lastFocus != apf.document.documentElement;
 
                     if (nofocus || visTest) {
@@ -175,7 +176,7 @@ apf.menu = function(struct, tagName){
                         lastFocus.focus(null, null, true);
                     }
 
-                    apf.menu.lastFocus = null;
+                    apf.menu.lastFocussed = null;
                 }
             }
             //#endif
@@ -192,7 +193,9 @@ apf.menu = function(struct, tagName){
 
                 //@todo problem with loosing focus when window looses focus
                 if (this.$hideTree === true && this.opener
-                    && this.opener.parentNode && this.opener.parentNode.localName == "menu") {
+                    && this.opener.parentNode 
+                  && this.opener.parentNode.localName == "menu"
+                  && this.opener.parentNode.$hideTree != -1) {
                     this.opener.parentNode.$hideTree = true
                     this.opener.parentNode.hide();
                 }
@@ -225,6 +228,10 @@ apf.menu = function(struct, tagName){
      */
     this.display = function(x, y, noanim, opener, xmlNode, openMenuId, btnWidth){
         this.opener = opener;
+        
+        var lastFocus;
+        if (!apf.menu.lastFocussed)
+            lastFocus = apf.menu.lastFocussed = apf.menu.lastFocussedItem;
         
         //Show / hide Child Nodes Based on XML
         if (xmlNode && !this.disabled) {
@@ -293,10 +300,10 @@ apf.menu = function(struct, tagName){
                 });
             }
             else {
-                var bodyPos = apf.getAbsolutePosition(document.body);
+                //var bodyPos = apf.getAbsolutePosition(document.body);
                 apf.popup.show(this.$uniqueId, {
-                    x            : x - bodyPos[0], 
-                    y            : y - bodyPos[1] - (apf.isIE && apf.isIE < 8 ? 1 : 0), 
+                    x            : x, 
+                    y            : y - (apf.isIE && apf.isIE < 8 ? 1 : 0), 
                     animate      : noanim || !this.animate ? false : "fade",
                     steps        : 10,
                     //ref          : this.$ext.offsetParent,
@@ -307,10 +314,10 @@ apf.menu = function(struct, tagName){
                 });
             }
             
-            var lastFocus      =
-            apf.menu.lastFocus = opener && opener.$focussable === true
-                ? opener
-                : apf.menu.lastFocus || apf.document.activeElement;
+            // var lastFocus      =
+            // apf.menu.lastFocus = opener && opener.$focussable === true
+            //     ? opener
+            //     : apf.menu.lastFocus || apf.document.activeElement;
             
             apf.popup.last = null;
             
@@ -464,7 +471,7 @@ apf.menu = function(struct, tagName){
 
                         var btnMenu = node.parentNode.menuIsPressed;
                         if (btnMenu) {
-                            self[btnMenu.submenu].dispatchEvent("keydown", {
+                            (self[btnMenu.submenu] || btnMenu.submenu).dispatchEvent("keydown", {
                                 keyCode : 40
                             });
                         }
@@ -535,7 +542,9 @@ apf.menu = function(struct, tagName){
         if (this.$showingSubMenu || this.pinned
                 || apf.isChildOf(e.fromElement, e.toElement)
                 || apf.isChildOf(e.toElement, e.fromElement)
-                || apf.isChildOf(this, e.toElement) || (e.name !== "popuphide" && !e.toElement))
+                || apf.isChildOf(this, e.toElement) 
+                || (e.name !== "popuphide" && !e.toElement)
+                || e.toElement && apf.popup.cache[e.toElement.$uniqueId])
             return;
 
         if (this.$hideTree != -1) {
@@ -546,8 +555,11 @@ apf.menu = function(struct, tagName){
         return false;
     }
 
-    this.addEventListener("focus", function(){
+    this.addEventListener("focus", function(e){
         apf.popup.last = this.$uniqueId;
+        
+        if (!apf.menu.lastFocussed)
+            apf.menu.lastFocussed = apf.menu.lastFocussedItem;
     });
 
     this.addEventListener("blur", forceHide);
@@ -573,6 +585,12 @@ apf.menu = function(struct, tagName){
         apf.popup.removeContent(this.$uniqueId);
     };
 }).call(apf.menu.prototype = new apf.Presentation());
+
+apf.addEventListener("movefocus", function(e){
+    var next = e.toElement;
+    if (next && next.localName != "menu")
+        apf.menu.lastFocussedItem = next;
+});
 
 apf.aml.setElement("menu", apf.menu);
 // #endif

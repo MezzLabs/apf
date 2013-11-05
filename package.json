@@ -1,6 +1,21 @@
 {
-    "name": "apf",
-    "version": "0.1.0",
-    "private": true,
-    "main": "apf-node"
+  "name": "apf",
+  "version": "0.1.0",
+  "private": true,
+  "main": "apf-node",
+  "_id": "apf@0.1.0",
+  "dependencies": {},
+  "devDependencies": {},
+  "optionalDependencies": {},
+  "engines": {
+    "node": "*"
+  },
+  "_engineSupported": true,
+  "_npmVersion": "1.1.20",
+  "_nodeVersion": "v0.6.19",
+  "_defaultsLoaded": true,
+  "dist": {
+    "shasum": "0fdfb7b06542ba51cbbe15b893089bb6aa326bfe"
+  },
+  "_from": "apf@https://github.com/ajaxorg/apf/tarball/317581f496dec578dc447feb927c66f056e777ed"
 }

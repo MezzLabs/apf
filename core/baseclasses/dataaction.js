@@ -42,7 +42,7 @@ apf.DataAction = function(){
             return apf.window.$at;
 
         var pNode = this, tracker = ignoreMe ? null : this.$at;
-        if (!tracker && this.dataParent)
+        if (!tracker && this.dataParent && this.dataParent.parent)
             tracker = this.dataParent.parent.$at; //@todo apf3.0 change this to be recursive??
 
         while (!tracker) {
@@ -417,7 +417,7 @@ apf.DataAction = function(){
         if (sel[0] == "#" || sel[1] == "#") {
             var m = (rule.cvalue3 || (rule.cvalue3 = apf.lm.compile(rule.value, {
                 xpathmode: 5
-            })))(xmlNode);
+            })))(xmlNode, apf.nameserver.lookup["all"]);
 
             model = m.model && m.model.$isModel && m.model;
             if (model) {

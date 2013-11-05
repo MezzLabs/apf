@@ -25,7 +25,7 @@
  * @private
  */
 apf.WinServer = {
-    count : 9000,
+    count : 900000,
     wins  : [],
 
     setTop : function(win, norecur){
@@ -355,7 +355,8 @@ apf.AmlWindow = function(struct, tagName){
                     color       : "black", 
                     opacity     : this.cover && this.cover.getAttribute("opacity") || 0.5,
                     protect     : this.$uniqueId,
-                    customCover : this.cover || ""
+                    customCover : this.cover || "",
+                    zIndex      : true
                 });
         }
         else { 
@@ -433,7 +434,8 @@ apf.AmlWindow = function(struct, tagName){
                     color       : "black", 
                     opacity     : this.cover && this.cover.getAttribute("opacity") || 0.5,
                     protect     : this.$uniqueId,
-                    customCover : this.cover || ""
+                    customCover : this.cover || "",
+                    zIndex      : true
                 });
             }
 

@@ -408,7 +408,10 @@ apf.layout = {
      * Forces calling the resize rules for an HTML element
      * @param {HTMLElement} oHtml  The element for which the rules are executed.
      */
-    forceResize : function(oHtml){
+    forceResize : function(oHtml, force){
+        if (!force)
+            return;
+            
         if (apf.hasSingleRszEvent)
             return apf.layout.$onresize && apf.layout.$onresize();
 

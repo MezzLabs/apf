@@ -425,6 +425,20 @@ apf.http = function(){
                     encodeURIComponent(requestedWithParam) + "=1";
             }
 
+            // global support for protection against Cross Site Request Forgery
+            // attacks by supplying a token to the global APF config object. This
+            // token will be appended to the URL and sent for each XHR.
+            // Warning: if you are doing CORS, be sure to use a different method!
+            var CSRFHeader = apf.config ? apf.config["csrf-header"] : null;
+            var CSRFToken = apf.config ? apf.config["csrf-token"] : null;
+            if (CSRFHeader) {
+                setRequestHeader("X-CSRF-Token", CSRFHeader);
+            }
+            else if (CSRFToken) {
+                CSRFToken = CSRFToken.split("=").map(function(s) { return encodeURIComponent(s); }).join("=");
+                httpUrl += (httpUrl.indexOf("?") == -1 ? "?" : "&") + CSRFToken;
+            }
+
             var withCredentials = false;
             if ("withCredentials" in options) {
                 withCredentials = options.withCredentials;
@@ -432,25 +446,9 @@ apf.http = function(){
             else {
                 withCredentials = (apf.config && apf.config["cors-with-credentials"]) || false;
             }
+
             http.withCredentials = withCredentials;
-
-            // global support for protection against Cross Site Request Forgery
-            // attacks by supplying a token to the global APF config object. This
-            // token will be appended to the URL and sent for each XHR.
-            // Warning: if you are doing CORS, be sure to use a different method!
-            var method = this.method || options.method || "GET";
-            var CSRFHeader = apf.config ? apf.config["csrf-header"] : null;
-            var CSRFToken = apf.config ? apf.config["csrf-token"] : null;
-            if (method !== "GET" && CSRFToken) {
-                CSRFToken = CSRFToken.split("=").map(function(s) { return encodeURIComponent(s); }).join("=");
-                httpUrl += (httpUrl.indexOf("?") == -1 ? "?" : "&") + CSRFToken;
-            }
-
-            http.open(method, httpUrl, async);
-
-            if (method !== "GET" && CSRFHeader) {
-                setRequestHeader("X-CSRF-Token", CSRFHeader);
-            }
+            http.open(this.method || options.method || "GET", httpUrl, async);
 
             if (options.username) {
                 setRequestHeader("Authorization", "Basic "

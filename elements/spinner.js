@@ -206,9 +206,7 @@ apf.spinner = function(struct, tagName){
         //#endif
 
         this.focused = true;
-        this.$setStyleClass(this.oInput, "focus");
-        this.$setStyleClass(this.$buttonPlus, "plusFocus");
-        this.$setStyleClass(this.$buttonMinus, "minusFocus");
+        this.$setStyleClass(this.$ext, this.$baseCSSname + "Focus");
         
         if (this.oLeft)
             this.$setStyleClass(this.oLeft, "leftFocus");
@@ -218,9 +216,7 @@ apf.spinner = function(struct, tagName){
         if (!this.$ext && !this.focused)
             return;
 
-        this.$setStyleClass(this.oInput, "", ["focus"]);
-        this.$setStyleClass(this.$buttonPlus, "", ["plusFocus"]);
-        this.$setStyleClass(this.$buttonMinus, "", ["minusFocus"]);
+        this.$setStyleClass(this.$ext, "", [this.$baseCSSname + "Focus"]);
         
         if (this.oLeft)
             this.$setStyleClass(this.oLeft, "" ["leftFocus"]);

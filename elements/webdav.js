@@ -216,8 +216,8 @@ apf.webdav = function(struct, tagName){
 
                     oError = WebDAVError.call(_self, "Url: " + extra.url + "\nInfo: " + extra.message);
 
-                    if (extra.tpModule.retryTimeout(extra, state, _self, oError) === true)
-                        return true;
+                    //if (extra.tpModule.retryTimeout(extra, state, _self, oError) === true)
+                    //    return true;
                     if (fCallback)
                         return fCallback.call(_self, data, state, extra, fCallback2);
                     else

@@ -135,7 +135,7 @@ apf.button  = function(struct, tagName){
                 return;
 
             var pNode = this.parentNode;
-            while (pNode && !pNode.focussable && value--)
+            while (pNode && !pNode.focussable && --value)
                 pNode = pNode.parentNode;
                 
             //Currrently only support for parentNode, this might need to be expanded
@@ -156,8 +156,9 @@ apf.button  = function(struct, tagName){
     
             _self.$setStyleClass(_self.$ext, _self.$baseCSSname + "Default");
     
-            if (e.srcElement != _self && _self.$focusParent) {
-                _self.$focusParent.addEventListener("keydown", btnKeyDown);
+            if (e.toElement != _self && e.toElement) {
+                // _self.$focusParent
+                e.toElement.addEventListener("keydown", btnKeyDown);
             }
         }
     
@@ -167,8 +168,9 @@ apf.button  = function(struct, tagName){
     
             _self.$setStyleClass(_self.$ext, "", [_self.$baseCSSname + "Default"]);
     
-            if (e.srcElement != _self && _self.$focusParent) {
-                _self.$focusParent.removeEventListener("keydown", btnKeyDown);
+            if (e.fromElement != _self && e.fromElement) {
+                //_self.$focusParent
+                e.fromElement.removeEventListener("keydown", btnKeyDown);
             }
         }
     
@@ -398,7 +400,7 @@ apf.button  = function(struct, tagName){
     }
 
     function menuDown(e){
-        var menu = self[this.submenu],
+        var menu = self[this.submenu] || this.submenu,
             $button1;
 
         this.value = !this.value;
@@ -417,8 +419,8 @@ apf.button  = function(struct, tagName){
         var menuPressed = this.parentNode.menuIsPressed;
         if (menuPressed && menuPressed != this) {
             menuPressed.setValue(false);
-            var oldMenu = self[menuPressed.submenu];
-            if (oldMenu != self[this.submenu])
+            var oldMenu = self[menuPressed.submenu] || menuPressed.submenu;
+            if (oldMenu != (self[this.submenu] || this.submenu))
                 oldMenu.$propHandlers["visible"].call(oldMenu, false, true);
         }
         
@@ -441,8 +443,15 @@ apf.button  = function(struct, tagName){
 
         this.parentNode.menuIsPressed = this;
 
+        apf.setStyleClass(this.$ext, 'submenu');
+
         menu.display(null, null, false, this,
             null, null, this.$ext.offsetWidth - 2);
+        
+        menu.addEventListener("prop.visible", function listen(e){
+            apf.setStyleClass(this.$ext, '', ['submenu']);
+            menu.removeEventListener("prop.visible", listen);
+        });
 
         this.parentNode.hasMoved = false;
 
@@ -458,12 +467,12 @@ apf.button  = function(struct, tagName){
         if (!menuPressed || menuPressed == this)
             return;
 
-        var menu = self[this.submenu];
+        var menu = self[this.submenu] || this.submenu;
         if (menu.pinned)
             return;
 
         menuPressed.setValue(false);
-        var oldMenu = self[menuPressed.submenu];
+        var oldMenu = self[menuPressed.submenu] || menuPressed.submenu;
         oldMenu.$propHandlers["visible"].call(oldMenu, false, true);//.hide();
 
         this.setValue(true);
@@ -482,7 +491,9 @@ apf.button  = function(struct, tagName){
 //        menu.display(pos[0],
 //            pos[1] + this.$ext.offsetHeight, true, this,
 //            null, null, this.$ext.offsetWidth - 2);
-            
+        
+        apf.setStyleClass(this.$ext, 'submenu');
+        
         menu.display(null, null, true, this,
             null, null, this.$ext.offsetWidth - 2);
 
@@ -619,7 +630,7 @@ apf.button  = function(struct, tagName){
 
     this.$clickHandler = function(){
         // This handles the actual OnClick action. Return true to redraw the button.
-        if (this.isBoolean && !this.submenu) {
+        if (this.isBoolean && !this.submenu && this.auto !== false) {
             this.setProperty("value", !this.value);
             return true;
         }

@@ -434,6 +434,9 @@ apf.splitter.templates = {
             var method = finalPass ? "setAttribute" : "setProperty";
             
             var pNode = this.$parent || this.parentNode;
+            var firstChild = pNode.firstChild;
+            if (firstChild.localName == "splitter")
+                firstChild = firstChild.nextSibling;
             if (pNode.fixedChild) {
                 if (pNode.fixedChild == pNode.firstChild) {
                     pNode.fixedChild[method]("height", newPos - pNode.$edge[0]);
@@ -444,9 +447,9 @@ apf.splitter.templates = {
                         - pNode.padding - pNode.$edge[1]);
                 }
             }
-            else if (pNode.firstChild.height) {
+            else if (firstChild.height) {
                 var total = apf.getHtmlInnerHeight(pNode.$int);
-                pNode.firstChild[method]("height", 
+                firstChild[method]("height", 
                     ((newPos - pNode.$edge[0])/total*100) + "%");
             }
             else {
@@ -455,14 +458,16 @@ apf.splitter.templates = {
                     ((total - newPos - pNode.$edge[2] - pNode.padding)/total*100) + "%");
             }
     
-            if (apf.hasSingleResizeEvent)
-                apf.layout.forceResize(this.$ext.parentNode);
+            apf.dispatchEvent("splitter.resize", { splitter: this, final: finalPass });
         },
         
         updateH : function(newPos, finalPass){
             var method = finalPass ? "setAttribute" : "setProperty";
 
             var pNode = this.$parent || this.parentNode;
+            var firstChild = pNode.firstChild;
+            if (firstChild.localName == "splitter")
+                firstChild = firstChild.nextSibling;
             if (pNode.fixedChild) {
                 if (pNode.fixedChild == pNode.firstChild) {
                     pNode.fixedChild[method]("width", newPos - pNode.$edge[3]);
@@ -473,9 +478,9 @@ apf.splitter.templates = {
                         - pNode.padding - pNode.$edge[2]);
                 }
             }
-            else if (pNode.firstChild.width) {
+            else if (firstChild.width) {
                 var total = apf.getHtmlInnerWidth(pNode.$int);
-                pNode.firstChild[method]("width", 
+                firstChild[method]("width", 
                     ((newPos - pNode.$edge[3])/total*100) + "%");
             }
             else {
@@ -484,8 +489,7 @@ apf.splitter.templates = {
                     ((total - newPos - pNode.$edge[1] - pNode.padding)/total*100) + "%");
             }
     
-            if (apf.hasSingleResizeEvent)
-                apf.layout.forceResize(this.$ext.parentNode);
+            apf.dispatchEvent("splitter.resize", { splitter: this, final: finalPass });
         },
         
         $setSiblings : function(){
@@ -514,14 +518,15 @@ apf.splitter.templates = {
                 _self.$setSiblings();
 
                 var pNode = _self.$parent || _self.parentNode;
+                var firstChild = pNode.firstChild.$splitter ? pNode.childNodes[1] : pNode.firstChild;
                 if (pNode.$vbox) {
-                    var min = parseInt(pNode.firstChild.minheight) + pNode.$edge[0];
+                    var min = parseInt(firstChild.minheight) + pNode.$edge[0];
                     var max = apf.getHtmlInnerHeight(pNode.$ext) - pNode.lastChild.minheight 
                         - pNode.$edge[2] - pNode.padding;
                     var offset = e.layerY || e.offsetY;
                 }
                 else {
-                    var min = parseInt(pNode.firstChild.minwidth) + pNode.$edge[3];
+                    var min = parseInt(firstChild.minwidth) + pNode.$edge[3];
                     var max = apf.getHtmlInnerWidth(pNode.$ext) - pNode.lastChild.minwidth 
                         - pNode.$edge[1] - pNode.padding;
                     var offset = e.layerX || e.offsetX;

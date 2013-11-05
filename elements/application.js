@@ -34,8 +34,8 @@ apf.application = function(){
     if (!apf.isO3) {    
         this.$int        = document.body;
         this.$tabList    = []; //Prevents documentElement from being focussed
-        this.$focussable = apf.KEYBOARD;
-        this.focussable  = true;
+        // this.$focussable = apf.KEYBOARD;
+        // this.focussable  = true;
         this.visible     = true;
         this.$isWindowContainer = true;
         this.focus = function(){ this.dispatchEvent("focus"); };

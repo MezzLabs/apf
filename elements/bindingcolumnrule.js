@@ -77,8 +77,8 @@ apf.BindingColumnRule = function(struct, tagName){
             //apf.setStyleRule("." + this.$baseCSSname + " .records ." + hFirst.$className, "marginLeft", "-" + vLeft); //Set
             apf.setStyleRule("." + pNode.$baseCSSname + " .row" + pNode.$uniqueId,
                 "paddingRight", vLeft, null, this.oWin); //Set
-            apf.setStyleRule("." + pNode.$baseCSSname + " .row" + pNode.$uniqueId,
-                "marginRight", "-" + vLeft, null, pNode.oWin); //Set
+            // apf.setStyleRule("." + pNode.$baseCSSname + " .row" + pNode.$uniqueId,
+            //     "marginRight", "-" + vLeft, null, pNode.oWin); //Set
         
             //headings and records have same padding-right
             if (pNode.$container)

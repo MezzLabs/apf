@@ -61,7 +61,7 @@ apf.fieldset = function(struct, tagName){
 };
 
 apf.frame    = function(struct, tagName){
-    this.$init(tagName || "submit", apf.NODE_VISIBLE, struct);
+    this.$init(tagName || "frame", apf.NODE_VISIBLE, struct);
 };
 
 (function(){
@@ -112,6 +112,16 @@ apf.frame    = function(struct, tagName){
             + (value.match(/^http:\/\//) ? "target='_blank'" : "") + ">" 
             + this.caption + "</a>";
         this.oCaption = this.oCaption.firstChild;
+    };
+    
+    this.$propHandlers["activetitle"] = function(value){
+        var node = this.oCaption.parentNode;
+        // if (node.nodeType != 1) node = node.parentNode;
+        var _self = this;
+        node.addEventListener("click", function(e){
+            if (e.target == node || e.target == _self.oCaption)
+                _self.$toggle(value);
+        }, false);
     };
     
     /** 

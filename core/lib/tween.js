@@ -61,6 +61,9 @@ var modules = {
     paddingTop: function(oHtml, value, center){
         oHtml.style.paddingTop = value + "px";
     },
+    boxFlex: function(oHtml, value, center){
+        oHtml.style[apf.CSSPREFIX + "BoxFlex"] = value;
+    },
     "height-rsz": function(oHtml, value, center){
         oHtml.style.height = value + PX;
         if (apf.hasSingleResizeEvent && apf.layout.$onresize)

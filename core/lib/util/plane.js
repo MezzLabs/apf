@@ -121,7 +121,8 @@ apf.plane = {
                         this.plane.appendChild(o);
                     }
                 }
-                apf.window.zManager.set("plane", this.plane, !reAppend && o);
+                if (options.zIndex)
+                    apf.window.zManager.set("plane", this.plane, !reAppend && o);
                 
                 useRealSize = apf.isIE;
                 var pWidth = (plane.parentNode == document.body

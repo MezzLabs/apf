@@ -84,7 +84,7 @@ apf.Focussable = function(){
      */
     this.blur = function(noset, e){
         //#ifdef __WITH_POPUP
-        if ((e && !apf.isChildOf(e.fromElement, e.toElement)) && apf.popup.isShowing(this.$uniqueId))
+        if ((e && !apf.isChildOf(e.fromElement, e.toElement)) && apf.popup.isShowing(this.$uniqueId) && e.toElement.localName != "menu")
             apf.popup.forceHide(); //This should be put in a more general position
         //#endif
         

@@ -340,7 +340,7 @@ apf.Class.prototype = new (function(){
             if (o.length > 2) { //apf.offline.syncing
                 bProp = o.pop();
                 try{
-                    node  = eval(o.join("."));
+                    try { node  = eval(o.join(".")); } catch(e) {}
                 }
                 catch(e){
                     if (arguments[2]) {
@@ -945,7 +945,7 @@ apf.Class.prototype = new (function(){
             //Remove id from global js space
             try {
                 if (this.id || this.name)
-                    delete self[this.id || this.name];
+                    self[this.id || this.name] = null;
             }
             catch (ex) {}
             return;
@@ -1024,7 +1024,7 @@ apf.Class.prototype = new (function(){
         //Remove id from global js space
         try {
             if (this.id || this.name)
-                self[this.id || this.name] = null;
+                delete self[this.id || this.name];
         }
         catch (ex) {}
 

@@ -606,15 +606,17 @@ apf.textbox  = function(struct, tagName){
             //this.focus({mouse:true});
         }
         
-        /*if (this.dispatchEvent("keydown", {
-            keyCode   : key,
-            ctrlKey   : ctrlKey,
-            shiftKey  : shiftKey,
-            altKey    : altKey,
-            htmlEvent : e}) === false)
-                return false;
+        // Disabled this because it was being fired via the document as well
+        // Tested using the gotoline plugin
+        // if (this.dispatchEvent("keydown", {
+        //     keyCode   : key,
+        //     ctrlKey   : ctrlKey,
+        //     shiftKey  : shiftKey,
+        //     altKey    : altKey,
+        //     htmlEvent : e}) === false)
+        //         return false;
 
-        // @todo: revisit this IF statement - dead code?
+        /*// @todo: revisit this IF statement - dead code?
         if (false && apf.isIE && (key == 86 && ctrlKey || key == 45 && shiftKey)) {
             var text = window.clipboardData.getData("Text");
             if ((text = this.dispatchEvent("keydown", {

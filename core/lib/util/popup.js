@@ -158,7 +158,13 @@ apf.popup = {
                 else
                     value = Math.max(0, edgeY - (options.height || o.height || o.content.offsetHeight));
                 
-                popup.style.top = (!options.up && value < 0 ? y : value) + "px";
+                if (!options.up && value < 0) {
+                    moveUp = false;
+                    popup.style.top = y + "px";
+                }
+                else {
+                    popup.style.top = value + "px";
+                }
             }
             else {
                 popup.style.top = y + "px";
@@ -182,7 +188,9 @@ apf.popup = {
                     }
                     else {
                         value = (edgeX - (options.width || o.width || o.content.offsetWidth) 
-                                - (parentMenu ? (parentMenu.width || parentMenu.content.offsetWidth) : 0));
+                                - (parentMenu ? (edgeX - parentMenu.content.offsetLeft) : 0))
+                                + 5;
+                                //parentMenu.width || parentMenu.content.offsetWidth) : 0));
                     }
                     popup.style.left = value < 0 ? x : (value - 1) + "px";
                 }

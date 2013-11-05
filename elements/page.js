@@ -309,7 +309,7 @@ apf.page = function(struct, tagName){
     });
     
     this.addEventListener("DOMNodeRemovedFromDocument", function(e){
-        if (this.fake && this.parentNode.$activepage == this)
+        if (this.fake && this.parentNode && this.parentNode.$activepage == this)
             this.$deactivate();
     });
 
@@ -319,11 +319,17 @@ apf.page = function(struct, tagName){
             
         if (!e.$isMoveWithinParent 
           && this.skinName != this.parentNode.skinName) {
-            this.$destroy(); //clean up button
+            // this.$destroy(); //clean up button
+            var skin = this.parentNode.skinName.split(":");
+            this.$forceSkinChange(skin[1], skin[0]);
         }
         else if (this.$button && (!e.$oldParent || e.$oldParent.$hasButtons) && this.parentNode.$buttons)
             this.parentNode.$buttons.insertBefore(this.$button,
                 e.$beforeNode && e.$beforeNode.$button || null);
+        
+        if (this.type)
+            this.relPage = this.parentNode.getPage && this.parentNode.getPage(this.type);
+            
     }, true);
 
     // *** Private state functions *** //
@@ -508,13 +514,17 @@ apf.page = function(struct, tagName){
         this.$setStyleClass(oHtml, "down", null, true);
     }
     
-    this.$btnControl = {};
     this.$btnDown = function(oHtml, htmlEvent){
         if (this.disabled) 
             return;
             
         if (htmlEvent.button == 2 && this.parentNode.contextmenu) {
             this.parentNode.contextPage = this;
+            return;
+        }
+        if (htmlEvent.button == 1) {
+            var page = apf.lookup(this.$uniqueId);
+            page.parentNode.remove(page, htmlEvent);
             return;
         }
         
@@ -528,162 +538,6 @@ apf.page = function(struct, tagName){
         
         //if (!this.parentNode.$order)
             $btnSet.call(this, oHtml);
-        //#ifdef __ENABLE_TAB_ORDER
-        //@todo vertically stacked buttons
-        //else
-        if (this.parentNode.$order && this.parentNode.getPages().length > 1) {
-            if (this.$btnControl[this.$uniqueId])
-                return;
-            
-            this.$dragging = true;
-            
-            var pos = apf.getAbsolutePosition(this.$button, this.parentNode.$ext);
-            var start = htmlEvent.clientX;
-            var x = start - pos[0];
-            var t = apf.getAbsolutePosition(this.$button)[1];
-            
-            var div = oHtml.cloneNode(true);
-            div.style.opacity = 0;
-            
-            oHtml.style.left = (oHtml.offsetLeft) + "px";
-            oHtml.style.top = (oHtml.offsetTop) + "px";
-            oHtml.style.width = (oHtml.offsetWidth - apf.getWidthDiff(oHtml)) + "px";
-            oHtml.style.position = "absolute";
-            
-            this.$button.parentNode.insertBefore(div, this.$button);
-            
-            var marginWidth = Math.abs(apf.getMargin(div)[0]);
-            
-            var mUp, mMove, _self = this, started;
-            apf.addListener(document, "mousemove", mMove = function(e){
-                if (!e) e = event;
-                
-                if (!started) {
-                    if (Math.abs(start - e.clientX) < 3)
-                        return;
-                    started = true;
-                    
-                    oHtml.style.zIndex = 1;
-                }
-                
-                oHtml.style.left = "-2000px";
-                
-                var el = document.elementFromPoint(e.clientX, t + 1);
-                var aml = el && apf.findHost(el);
-                
-                oHtml.style.left = (e.clientX - x) + "px";
-                
-                if (aml && aml.localName == "page") {
-                    aml.$button.style.position = "relative";
-
-                    var obj, onRight = div.offsetLeft > aml.$button.offsetLeft;
-                    
-                    var pos = apf.getAbsolutePosition(aml.$button);
-                    if (onRight && aml.$button.offsetWidth - e.clientX + pos[0] < marginWidth)
-                        return;
-                        
-                    if (obj = _self.$btnControl[aml.$uniqueId]) {
-                        if (obj.onRight != onRight)
-                            obj.stop();
-                        else 
-                            return;
-                    }
-                    
-                    _self.$btnControl[aml.$uniqueId] = {onRight: onRight};
-                    
-                    var newPosition = _self.$lastPosition = onRight
-                        ? aml.$button
-                        : aml.$button.nextSibling;
-                    _self.$lastLeft = aml.$button.offsetLeft;
-                    
-                    apf.tween.single(aml.$button, {
-                        steps   : 20,
-                        interval: 10,
-                        from    : 0,
-                        to      : onRight
-                            ? aml.$button.offsetWidth - marginWidth
-                            : -1 * (aml.$button.offsetWidth - marginWidth),
-                        type    : "left",
-                        anim    : apf.tween.easeInOutCubic,
-                        control : _self.$btnControl[aml.$uniqueId],
-                        onstop  : function(){
-                            
-                        },
-                        onfinish : function(){
-                            aml.$button.style.left     = 
-                            aml.$button.style.position = "";
-                            
-                            delete _self.$btnControl[aml.$uniqueId];
-                            
-                            if (div && div.parentNode)
-                                div.parentNode.insertBefore(div, newPosition);
-                            
-                            _self.$lastPosition =
-                            _self.$lastLeft     = undefined;
-                        }
-                    });
-                }
-            });
-
-            apf.addListener(document, "mouseup", mUp = function(e){
-                if (!e) e = event;
-                
-                var aml = _self.$lastPosition !== null
-                    ? apf.findHost(_self.$lastPosition || div.nextSibling)
-                    : null;
-                if (started && aml != _self.nextSibling) {
-                    apf.tween.single(_self.$button, {
-                        steps   : 20,
-                        interval: 10,
-                        from    : _self.$button.offsetLeft,
-                        to      : _self.$lastLeft || div.offsetLeft,
-                        type    : "left",
-                        control : _self.$btnControl[_self.$uniqueId] = {},
-                        anim    : apf.tween.easeInOutCubic,
-                        onstop  : function(){
-                            
-                        },
-                        onfinish : function(){
-                            oHtml.style.position = 
-                            oHtml.style.zIndex   = 
-                            oHtml.style.top      = 
-                            oHtml.style.width    =
-                            oHtml.style.left     = "";
-                            
-                            var reorder = _self.nextSibling != aml;
-                            var lastNode;
-                            if (!(lastNode = apf.findHost(_self.$button.nextSibling)) || lastNode === _self.parentNode.lastChild)
-                                _self.parentNode.appendChild(_self);
-                            else
-                                _self.parentNode.insertBefore(_self, aml);
-                            div.parentNode.removeChild(div);
-                            if (reorder) {
-                                _self.parentNode.dispatchEvent("reorder", {
-                                    page: _self.localName != "page"
-                                        ? _self.parentNode.$activepage
-                                        : _self
-                                });
-                            }
-                            
-                            delete _self.$btnControl[_self.$uniqueId];
-                        }
-                    });
-                }
-                else {
-                    oHtml.style.position = 
-                    oHtml.style.zIndex   = 
-                    oHtml.style.top      = 
-                    oHtml.style.width    =
-                    oHtml.style.left     = "";
-                    
-                    div.parentNode.removeChild(div);
-                }
-                
-                apf.removeListener(document, "mouseup", mUp);
-                apf.removeListener(document, "mousemove", mMove);
-            });
-        }
-        //#endif
     }
     
     this.$btnUp = function(oHtml){
@@ -786,10 +640,25 @@ apf.page = function(struct, tagName){
             //this.$int.setAttribute("id", this.$int.getAttribute("id"));
 
         //@todo this doesnt support hidden nodes.
-        if (this.$isLast)
-            this.$last();
-        if (this.$isFirst)
-            this.$first();
+        if (this.visible) {
+            if (this.$isLast)
+                this.$last();
+            if (this.$isFirst)
+                this.$first();
+        }
+        
+        var _self = this;
+        this.parentNode && this.parentNode.getPages().forEach(function(page){
+            if (page && page.type == _self.id) {
+                page.relPage = _self;
+                if (page.$active) {
+                    _self.$fake = page; 
+                    page.$activate();
+                }
+                _self.$button.style.display = "none";
+                _self.visible = false;
+            }
+        })
     };
 
     this.$destroy = function(){

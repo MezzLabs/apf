@@ -1383,8 +1383,8 @@ apf.MultiselectDragDrop = function() {
             if (!sel)
                 return;
             
-            if (!width || width == "auto")
-                this.oDrag.style.width = (sel.offsetWidth - apf.getWidthDiff(this.oDrag)) + "px";
+            // if (!width || width == "auto")
+            //     this.oDrag.style.width = (sel.offsetWidth - apf.getWidthDiff(this.oDrag)) + "px";
             this.$updateNode(this.selected, this.oDrag);
         }
         

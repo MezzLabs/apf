@@ -281,6 +281,9 @@ apf.DOMParser.prototype = new (function(){
     }
 
     this.$parseState = function(amlNode, options) {
+        if (amlNode.$amlDestroyed)
+            return;
+        
         this.$callCount++;
 
         if (amlNode.$parseOptions) {

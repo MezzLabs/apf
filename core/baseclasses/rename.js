@@ -371,6 +371,7 @@ apf.Rename.initEditableArea = function(){
             //apf.sanitizeTextbox(this.$txt);
         //#endif
     
+        this.$txt.spellcheck       = false;
         this.$txt.refCount         = 0;
         this.$txt.id               = "txt_rename";
         //this.$txt.style.whiteSpace = "nowrap";

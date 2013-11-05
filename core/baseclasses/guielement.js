@@ -139,8 +139,8 @@ apf.GuiElement = function(){
     this.$focussable = apf.KEYBOARD_MOUSE; // Each GUINODE can get the focus by default
     this.visible     = 2; //default value;
     
-    this.minwidth    = 1;
-    this.minheight   = 1;
+    this.minwidth    = 0;
+    this.minheight   = 0;
     
     /*this.minwidth   = 5;
     this.minheight  = 5;
@@ -180,16 +180,20 @@ apf.GuiElement = function(){
                     this.$disableCurrentLayout();
                 this.parentNode.register(this, insert);
                 this.$disableCurrentLayout = null;
+                this.$layoutType = null;
                 return type == "table";
             }else
             // #endif
 
             // #ifdef __AMLVBOX || __AMLHBOX
             if (this.parentNode.$box) {
-                if (this.$disableCurrentLayout)
-                    this.$disableCurrentLayout();
-                this.parentNode.register(this, insert);
-                this.$disableCurrentLayout = null;
+                if (this.$layoutType != this.parentNode) {
+                    if (this.$disableCurrentLayout)
+                        this.$disableCurrentLayout();
+                    this.parentNode.register(this, insert);
+                    this.$disableCurrentLayout = null;
+                    this.$layoutType = this.parentNode;
+                }
                 return type == this.parentNode.localName;
             } //else
             // #endif
@@ -201,16 +205,18 @@ apf.GuiElement = function(){
                 this.$disableCurrentLayout();
             this.$enableAnchoring();
             this.$disableCurrentLayout = this.$disableAnchoring;
+            this.$layoutType = null;
         }
         return type == "anchoring";
         // #endif
     }
 
     this.addEventListener("DOMNodeInserted", function(e){
-//        if (e.currentTarget == this 
-//          && (this.parentNode.$box || "table" == this.parentNode.localName)) {
-            this.$setLayout();
-//        }
+        if (e.currentTarget == this
+         && (this.parentNode.$box || "table" == this.parentNode.localName)) {
+            if (!e.$oldParent) this.$layoutType = null;
+            this.$setLayout(!e.$oldParent);
+        }
     }); 
 
     this.implement(
@@ -461,17 +467,23 @@ apf.GuiElement = function(){
 
             //--#ifdef __WITH_CONTENTEDITABLE
             //@todo slow??
-            var diff = apf.getDiff(this.$ext);
-            this.$ext.style.minWidth = Math.max(0, this.minwidth - diff[0]) + "px";
-            this.$ext.style.minHeight = Math.max(0, this.minheight - diff[1]) + "px";
-            this.$ext.style.maxWidth = Math.max(0, this.maxwidth - diff[0]) + "px";
-            this.$ext.style.maxHeight = Math.max(0, this.maxheight - diff[1]) + "px";
-            
-            if (this.$altExt && apf.isGecko) {
-                this.$altExt.style.minHeight = this.$ext.style.minHeight;
-                this.$altExt.style.maxHeight = this.$ext.style.maxHeight;
-                this.$altExt.style.minWidth = this.$ext.style.minWidth;
-                this.$altExt.style.maxWidth = this.$ext.style.maxWidth;
+            if (this.minwidth || this.minheight || this.maxwidth != 10000 || this.maxheight != 10000) {
+                var diff = apf.getDiff(this.$ext);
+                if (this.minwidth)
+                    this.$ext.style.minWidth = Math.max(0, this.minwidth - diff[0]) + "px";
+                if (this.minheight)
+                    this.$ext.style.minHeight = Math.max(0, this.minheight - diff[1]) + "px";
+                if (this.maxwidth != 10000)
+                    this.$ext.style.maxWidth = Math.max(0, this.maxwidth - diff[0]) + "px";
+                if (this.maxheight != 10000)
+                    this.$ext.style.maxHeight = Math.max(0, this.maxheight - diff[1]) + "px";
+
+                if (this.$altExt && apf.isGecko) {
+                    this.$altExt.style.minHeight = this.$ext.style.minHeight;
+                    this.$altExt.style.maxHeight = this.$ext.style.maxHeight;
+                    this.$altExt.style.minWidth = this.$ext.style.minWidth;
+                    this.$altExt.style.maxWidth = this.$ext.style.maxWidth;
+                }
             }
             //--#endif
         }
@@ -542,9 +554,11 @@ apf.GuiElement = function(){
                 if (isRef || xmlNode && result || !cm.match) { //!xmlNode && 
                     menuId = isRef
                         ? cm
-                        : cm.menu
+                        : cm.menu;
+                        
+                    var menu = cm.localName == "menu" ? cm : self[menuId];
 
-                    if (!self[menuId]) {
+                    if (!menu) {
                         // #ifdef __DEBUG
                         throw new Error(apf.formatErrorString(0, this,
                             "Showing contextmenu",
@@ -555,7 +569,7 @@ apf.GuiElement = function(){
                         return;
                     }
 
-                    self[menuId].display(e.x, e.y, null, this, xmlNode);
+                    menu.display(e.x, e.y, null, this, xmlNode);
 
                     e.returnValue  = false;//htmlEvent.
                     e.cancelBubble = true;
@@ -575,11 +589,15 @@ apf.GuiElement = function(){
             }*/
         }
         else {
-            menuId = typeof this.contextmenus[0] == "string"
-                ? this.contextmenus[0]
-                : this.contextmenus[0].getAttribute("menu")
+            var menu;
+            if (typeof this.contextmenus[0] == "string")
+                menu = self[this.contextmenus[0]];
+            if (this.contextmenus[0].localName == "menu")
+                menu = this.contextmenus[0];
+            else
+                menu = self[this.contextmenus[0].getAttribute("menu")];
 
-            if (!self[menuId]) {
+            if (!menu) {
                 // #ifdef __DEBUG
                 throw new Error(apf.formatErrorString(0, this,
                     "Showing contextmenu",
@@ -590,7 +608,7 @@ apf.GuiElement = function(){
                 return;
             }
 
-            self[menuId].display(e.x, e.y, null, this);
+            menu.display(e.x, e.y, null, this);
 
             e.returnValue = false;//htmlEvent.
             e.cancelBubble = true;
@@ -695,8 +713,8 @@ apf.GuiElement.propHandlers = {
             }
             
             //#ifdef __WITH_LAYOUT
-            if (apf.layout && this.$int) //apf.hasSingleRszEvent)
-                apf.layout.forceResize(this.$int);//this.$int
+            // if (apf.layout && this.$int) //apf.hasSingleRszEvent)
+            //     apf.layout.forceResize(this.$int);//this.$int
             //#endif
             
             this.visible = true;
@@ -882,7 +900,7 @@ apf.GuiElement.propHandlers = {
         if (!value) {
             this.$at = null;
         }
-        else if (value.localName == "actiontracker") {
+        else if (typeof value == "object") {
             this.$at = value;
         }
         else {

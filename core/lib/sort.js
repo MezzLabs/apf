@@ -148,7 +148,7 @@ apf.Sort = function(xmlNode){
         },
 
         "number" : function (t){
-            if (!t) t = 0;
+            if (!t) var t = 0;
             return (t.length < sort_intmask.length
                 ? sort_intmask[sort_intmask.length - t.length]
                 : "") + t;
@@ -167,7 +167,7 @@ apf.Sort = function(xmlNode){
                 d = apf.date.getDateTime(t);
             else 
                 d = (new Date(t.replace(sort_dateFormat, sort_dateReplace))).getTime();
-            t = "" + d.getTime();//parseInt(d);
+            var t = "" + d.getTime();//parseInt(d);
             if (t == "NaN") 
                 t = "0";
             return (t.length < sort_intmask.length ? sort_intmask[sort_intmask.length

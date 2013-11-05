@@ -646,19 +646,19 @@ apf.MultiSelect = function(){
      *
      */
     this.select  = function(xmlNode, ctrlKey, shiftKey, fakeselect, force, noEvent, userAction){
-        if (!this.selectable || userAction && this.disabled) 
+        if (!this.selectable || this.disabled) 
             return;
 
         if (parseInt(fakeselect) == fakeselect) {
             //Don't select on context menu
             if (fakeselect == 2) {
                 fakeselect = true;
-    	      	userAction = true;
+                userAction = true;
             }
             else {
-    	      	fakeselect = false;
-    	      	userAction = true;
-    	    }
+                fakeselect = false;
+                userAction = true;
+            }
         }
 
         if (this.$skipSelect) {
@@ -907,9 +907,11 @@ apf.MultiSelect = function(){
         //Deselect html nodes
         var htmlNode;
         for (var i = this.$valueList.length - 1; i >= 0; i--) {
-            htmlNode = this.$findHtmlNode(this.$valueList[i].getAttribute(
-                    apf.xmldb.xmlIdTag) + "|" + this.$uniqueId);
-            this.$deselect(htmlNode);
+            if (this.$valueList[i]) {
+                htmlNode = this.$findHtmlNode(this.$valueList[i].getAttribute(
+                        apf.xmldb.xmlIdTag) + "|" + this.$uniqueId);
+                this.$deselect(htmlNode);
+            }
         }
         
         //Reset internal variables
@@ -1790,7 +1792,8 @@ apf.MultiSelect = function(){
         else {
             //Set selected property
             this.$chained = true;
-            if (!e.force && (!this.dataParent || !this.dataParent.parent.$chained)) {
+            if (!e.force && (!this.dataParent || !this.dataParent.parent 
+              || !this.dataParent.parent.$chained)) {
                 var _self = this;
                 $setTimeout(function(){
                     //#ifdef __WITH_PROPERTY_BINDING

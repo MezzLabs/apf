@@ -765,7 +765,6 @@ apf.window = function(){
             return;
         
         apf.window.isExiting = true;
-        apf.window.destroy();
     });
 
     //#ifdef __WITH_WINDOW_FOCUS
@@ -975,6 +974,11 @@ apf.window = function(){
 
         if (amlNode === false) 
             amlNode = apf.window.activeElement;
+        
+        var eventTarget = amlNode;
+        
+        while (amlNode && !amlNode.focussable) 
+            amlNode = amlNode.parentNode;
 
         //#ifdef __WITH_FOCUS
         //Make sure the user cannot leave a modal window
@@ -1017,7 +1021,8 @@ apf.window = function(){
 //                }
             }
             else {
-                apf.window.$focusDefault(amlNode, {mouse: true, ctrlKey: e.ctrlKey});
+                // Disabled this to prevent menus from becoming unclickable
+                // apf.window.$focusDefault(amlNode, {mouse: true, ctrlKey: e.ctrlKey});
             }
     
             //#ifdef __WITH_WINDOW_FOCUS
@@ -1036,6 +1041,8 @@ apf.window = function(){
             //#endif
         }
         //#endif
+        
+        amlNode = eventTarget;
         
         apf.dispatchEvent("mousedown", {
             htmlEvent : e,
@@ -1063,6 +1070,10 @@ apf.window = function(){
               && amlNode.nodeType != amlNode.NODE_PROCESSING_INSTRUCTION 
               && !amlNode.textselect) //&& (!amlNode.$int || amlNode.$focussable) //getElementsByTagNameNS(apf.ns.xhtml, "*").length
                 canSelect = false;
+        }
+        
+        if (amlNode && amlNode.name === "editor::ace") {
+            canSelect = true;
         }
         
         if (!canSelect && e.button != 2) { // && !cEditable
@@ -1520,42 +1531,7 @@ apf.window = function(){
      * @private
      */
     this.destroy = function(){
-        this.$at = null;
-
-        apf.unload(this);
-
-        apf           =
-        this.win      =
-        this.window   =
-        this.document = null;
-
-        //@todo this is not needed... maybe use apf.removeListener
-        window.onfocus        =
-        window.onerror        =
-        window.onunload       =
-        window.onbeforeunload =
-        window.onbeforeprint  =
-        window.onafterprint   =
-        window.onmousewheel   =
-        window.onblur         = null;
-
-        //@todo use apf.removeEvent
-
-        document.oncontextmenu =
-        document.onmousedown   =
-        document.onmousemove   =
-        document.onmouseup     =
-        document.onmousewheel  =
-        document.onkeyup       =
-        document.onkeydown     = null
-
-        if (document.body) {
-            document.body.onmousedown =
-            document.body.onmousemove =
-            document.body.onmouseup   = null;
-
-            document.body.innerHTML = "";
-        }
+        
     };
 };
 apf.window.prototype = new apf.Class().$init();

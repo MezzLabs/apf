@@ -189,13 +189,13 @@ apf.Presentation = function(){
         //Store needed state information
         var oExt       = this.$ext,
             oInt       = this.$int,
-            pNode      = this.$ext.parentNode,
-            beforeNode = oExt.nextSibling,
-            idExt      = this.$ext.getAttribute("id"),
+            pNode      = this.$ext ? this.$ext.parentNode : this.$pHtmlNode,
+            beforeNode = oExt && oExt.nextSibling,
+            idExt      = this.$ext && this.$ext.getAttribute("id"),
             idInt      = this.$int && this.$int.getAttribute("id"),
             oldBase    = this.$baseCSSname;
 
-        if (oExt.parentNode)
+        if (oExt && oExt.parentNode)
             oExt.parentNode.removeChild(oExt);
 
         //@todo changing skin will leak A LOT, should call $destroy here, with some extra magic
@@ -213,7 +213,7 @@ apf.Presentation = function(){
         if (idExt)
             this.$ext.setAttribute("id", idExt);
 
-        if (beforeNode || pNode != this.$ext.parentNode)
+        if (beforeNode || this.$ext && pNode != this.$ext.parentNode)
             pNode.insertBefore(this.$ext, beforeNode);
 
         //Style
@@ -222,33 +222,35 @@ apf.Presentation = function(){
         
         //Margin
 
-        //Classes
-        var i, l, newclasses = [],
-               classes    = (oExt.className || "").splitSafe("\\s+");
-        for (i = 0; i < classes.length; i++) {
-            if (classes[i] && classes[i].indexOf(oldBase) != 0)
-                newclasses.push(classes[i].replace(oldBase, this.$baseCSSname));
+        if (this.$ext) {
+            //Classes
+            var i, l, newclasses = [],
+                   classes    = (oExt.className || "").splitSafe("\\s+");
+            for (i = 0; i < classes.length; i++) {
+                if (classes[i] && classes[i].indexOf(oldBase) != 0)
+                    newclasses.push(classes[i].replace(oldBase, this.$baseCSSname));
+            }
+            apf.setStyleClass(this.$ext, newclasses.join(" "));
+            
+            //Copy events
+            var en, ev = apf.skins.events;
+            for (i = 0, l = ev.length; i < l; i++) {
+                en = ev[i];
+                if (typeof oExt[en] == "function" && !this.$ext[en])
+                    this.$ext[en] = oExt[en];
+            }
+        
+            //Copy css state (dunno if this is best)
+            this.$ext.style.left     = oExt.style.left;
+            this.$ext.style.top      = oExt.style.top;
+            this.$ext.style.width    = oExt.style.width;
+            this.$ext.style.height   = oExt.style.height;
+            this.$ext.style.right    = oExt.style.right;
+            this.$ext.style.bottom   = oExt.style.bottom;
+            this.$ext.style.zIndex   = oExt.style.zIndex;
+            this.$ext.style.position = oExt.style.position;
+            this.$ext.style.display  = oExt.style.display;
         }
-        apf.setStyleClass(this.$ext, newclasses.join(" "));
-
-        //Copy events
-        var en, ev = apf.skins.events;
-        for (i = 0, l = ev.length; i < l; i++) {
-            en = ev[i];
-            if (typeof oExt[en] == "function" && !this.$ext[en])
-                this.$ext[en] = oExt[en];
-        }
-
-        //Copy css state (dunno if this is best)
-        this.$ext.style.left     = oExt.style.left;
-        this.$ext.style.top      = oExt.style.top;
-        this.$ext.style.width    = oExt.style.width;
-        this.$ext.style.height   = oExt.style.height;
-        this.$ext.style.right    = oExt.style.right;
-        this.$ext.style.bottom   = oExt.style.bottom;
-        this.$ext.style.zIndex   = oExt.style.zIndex;
-        this.$ext.style.position = oExt.style.position;
-        this.$ext.style.display  = oExt.style.display;
 
         //Widget specific
         //if (this.$loadAml)

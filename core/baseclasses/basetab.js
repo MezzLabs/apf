@@ -340,8 +340,8 @@ apf.BaseTab = function(){
             this.$setStyleClass(this.$buttons, "scale");
             this.addEventListener("resize", scalersz);
             
-            this.minwidth = this.$minBtnWidth * this.getPages().length + 10;
-            this.$ext.style.minWidth = Math.max(0, this.minwidth - apf.getWidthDiff(this.$ext)) + "px";
+            // this.minwidth = this.$minBtnWidth * this.getPages().length + 10;
+            // this.$ext.style.minWidth = Math.max(0, this.minwidth - apf.getWidthDiff(this.$ext)) + "px";
         }
         else {
             this.$setStyleClass(this.$buttons, "", ["scale"]);
@@ -367,7 +367,7 @@ apf.BaseTab = function(){
         if (animateWidth) {
             var p = tab.parentNode.getPages()[0] == tab 
                 ? null 
-                : t.previousElementSibling;
+                : tab.previousSibling.$button;
             var tb = p 
                 ? (p.offsetWidth - apf.getWidthDiff(p)) 
                 : parseInt(apf.getStyle(t, "maxWidth"));
@@ -426,12 +426,29 @@ apf.BaseTab = function(){
         p.style[apf.CSSPREFIX + "TransitionDuration"] = ".2s";
         p.style[apf.CSSPREFIX + "TimingFunction"] = "ease-out";
         
-        if (isLast)
-            p.style.paddingRight = "";
-        else {
-            var cur = parseInt(apf.getStyle(p, "paddingRight"));
-            p.style.paddingRight = (cur + diff - 21) + "px";
-        }
+        // if (!isLast && isContracted) {
+        //     t.style.minWidth = "20px"
+        //     t.style.maxWidth = "0px";
+        //     t.style.padding = 0;
+            
+        //     end();
+        // }
+        // else {
+            setTimeout(function(){
+                if (isLast)
+                    p.style.paddingRight = "";
+                else {
+                    var cur = parseInt(apf.getStyle(p, "paddingRight"));
+                    p.style.paddingRight = (cur + diff - 15) + "px";
+                }
+                
+                t.style.minWidth = "20px"
+                t.style.maxWidth = "0px";
+                t.style.padding = 0;
+                
+                end();
+            }, isOnly ? 150 : 100);
+        // }
         
         function end(){
             setTimeout(function(){
@@ -448,23 +465,6 @@ apf.BaseTab = function(){
                 callback(tab);
             }, 150);
         }
-        
-        if (!isLast && isContracted) {
-            t.style.minWidth = "20px"
-            t.style.maxWidth = "0px";
-            t.style.padding = 0;
-            
-            end();
-        }
-        else {
-            setTimeout(function(){
-                t.style.minWidth = "20px"
-                t.style.maxWidth = "0px";
-                t.style.padding = 0;
-                
-                end();
-            }, isOnly ? 150 : 100);
-        }
     }
     
     this.$scaleinit = function(node, type, callback, force){
@@ -472,12 +472,16 @@ apf.BaseTab = function(){
         
         var pg = this.getPages();
         var l  = pg.length;
-        this.minwidth = this.$minBtnWidth * l + 10; //@todo padding + margin of button container
-        this.$ext.style.minWidth = Math.max(0, this.minwidth - apf.getWidthDiff(this.$ext)) + "px";
+        if (!l) return;
+        
+        // this.minwidth = this.$minBtnWidth * l + 10; //@todo padding + margin of button container
+        // this.$ext.style.minWidth = Math.max(0, this.minwidth - apf.getWidthDiff(this.$ext)) + "px";
         
         if (force && !this.$ext.offsetWidth && !this.$ext.offsetHeight
-          || this.anims.indexOf(type) == -1) {
+          || this.anims.indexOf(type) == -1 || this.skipAnimOnce) {
             scalersz.call(this);
+            
+            this.skipAnimOnce = false;
               
             if (type == "add")
                 node.dispatchEvent("afteropen");
@@ -544,7 +548,7 @@ apf.BaseTab = function(){
             var pages = this.getPages();
             
             var lNode = pages[pages.length - 1];
-            while (lNode && lNode.$button.style.top) {
+            while (lNode && (!lNode.$button || lNode.$button.style.top)) {
                 lNode = lNode.previousSibling;
             }
             if (!lNode) return;
@@ -607,7 +611,7 @@ apf.BaseTab = function(){
         var p = apf.isGecko ? this.$buttons.parentNode : this.$buttons;
         
         p.style[apf.CSSPREFIX + "TransitionProperty"] = "padding-right";
-        p.style[apf.CSSPREFIX + "TransitionDuration"] = ".2s";
+        p.style[apf.CSSPREFIX + "TransitionDuration"] = this.length < 4 ? ".4s" : ".2s";
         p.style[apf.CSSPREFIX + "TimingFunction"] = "ease-out";
         
         if (apf.isGecko) {
@@ -816,6 +820,7 @@ apf.BaseTab = function(){
      */
     this.getPages = function(){
         var r = [], nodes = this.childNodes;
+        if (!nodes) return r;
         for (var i = 0, l = nodes.length; i < l; i++) {
             if ("page|case".indexOf(nodes[i].localName) > -1 && nodes[i].visible !== false)
                 r.push(nodes[i]);
@@ -1445,45 +1450,7 @@ apf.BaseTab = function(){
 
     // #ifdef __WITH_KEYBOARD
 
-    this.addEventListener("keydown", function(e){
-        if (!this.$hasButtons)
-            return;
-
-        var page,
-            key = e.keyCode;
-
-        switch (key) {
-            case 9:
-                break;
-            case 13:
-                break;
-            case 32:
-                break;
-            case 37: //LEFT
-                page = this.getPage().previousSibling;
-                while(page && (page.nodeType != 1
-                  || "page|case".indexOf(page.localName) == -1 || !page.visible)) {
-                    page = page.previousSibling;
-                }
-
-                if (page)
-                    this.setProperty("activepage", page);
-                break;
-            case 39: //RIGHT
-                page = this.getPage().nextSibling;
-                while(page && (page.nodeType != 1 
-                  || "page|case".indexOf(page.localName) == -1 || !page.visible)) {
-                    page = page.nextSibling;
-                }
-
-                if (page)
-                    this.setProperty("activepage", page);
-                break;
-            default:
-                return;
-        }
-        //return false;
-    }, true);
+    
 
     // #endif
 
@@ -1500,7 +1467,7 @@ apf.BaseTab = function(){
             this.$buttons = this.$getLayoutNode("main", "buttons", this.$ext);
             this.$buttons.setAttribute("id", this.$uniqueId + "_buttons");
             
-            if (apf.isGecko && !this.$gotContainer) {
+            if (false && apf.isGecko && !this.$gotContainer) {
                 var div = this.$ext.appendChild(document.createElement("div"));
                 div.style.backgroundImage = apf.getStyle(this.$buttons, "backgroundImage");
                 div.style.backgroundColor = apf.getStyle(this.$buttons, "backgroundColor");

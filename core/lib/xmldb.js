@@ -47,7 +47,7 @@ apf.xmldb = new (function(){
     this.$xmlDocLut   = [];
     this.$nodeCount   = {};
 
-    var cleanRE       = /(?:a_doc|a_id|a_listen|a_loaded)=(?:"|')[^'"]+(?:"|')/g,
+    var cleanRE       = / (?:a_doc|a_id|a_listen|a_loaded)=(?:"|')[^'"]+(?:"|')/g,
         whiteRE       = />[\s\n\r\t]+</g;
 
     /**
@@ -366,6 +366,36 @@ apf.xmldb = new (function(){
 
         return xmlNode;
     };
+        
+    this.addListener = function(xmlNode, callback){
+        var listen = String(xmlNode.getAttribute(this.xmlListenTag) || "");
+        var id     = this.$listeners.push(callback) - 1;
+        
+        (callback.ids || (callback.ids = [])).push(id);
+        
+        if (!listen || listen.indexOf(";" + id + ";") == -1)
+            xmlNode.setAttribute(this.xmlListenTag, (listen ? listen + id : ";" + id) + ";");
+    };
+    
+    this.removeListener = function(xmlNode, callback){
+        var listen = xmlNode.getAttribute(this.xmlListenTag);
+        var nodes = (listen ? listen.split(";") : []);
+    
+        var i, lut = {}
+        for (i = 0; i < nodes.length; i++) {
+            lut[nodes[i]] = 1;
+        }
+        
+        var ids = callback.ids;
+        for (i = ids.length; i >= 0; i--) {
+            if (lut[ids[i]]) {
+                delete this.$listeners[ids[i]];
+                delete lut[ids[1]];
+            }
+        }
+
+        xmlNode.setAttribute(this.xmlListenTag, Object.keys(lut).join(";"));// + ";"
+    }
 
     /*
      * @todo  Use this function when an element really unbinds from a
@@ -969,8 +999,7 @@ apf.xmldb = new (function(){
      * @private
      */
     this.applyRDB = function(args, undoObj){
-        if (apf.xmldb.disableRDB)
-            return;
+        return;
 
         var xmlNode = undoObj.localName || !undoObj.xmlNode
             ? args[1] && args[1].length && args[1][0] || args[1]

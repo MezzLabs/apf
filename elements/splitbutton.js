@@ -118,16 +118,18 @@ apf.splitbutton = function(struct, tagName){
 
         var _self = this;
         this.$button2.addEventListener("mousedown", function() {
-            if (!self[value].$splitInited) {
+            var menu = self[value] || value;
+            
+            if (!menu.$splitInited) {
                 _self.dispatchEvent("submenu.init");
-                self[value].addEventListener("display", function(){
+                menu.addEventListener("display", function(){
                     var split = this.opener.parentNode;
                     var diff = apf.getAbsolutePosition(split.$button2.$ext)[0]
                         - apf.getAbsolutePosition(split.$button1.$ext)[0];
 
                     this.$ext.style.marginLeft = "-" + diff + "px";
                 });
-                self[value].$splitInited = true;
+                menu.$splitInited = true;
             }
 
             this.removeEventListener("mousedown", arguments.callee);

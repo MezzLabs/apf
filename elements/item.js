@@ -496,7 +496,7 @@ apf.item  = function(struct, tagName){
             return;
 
         var _self = this, ps = this.parentNode.$showingSubMenu;
-        if (ps && ps.name == this.submenu) {
+        if (ps && ps.name && ps.name == this.submenu) {
             this.parentNode.$selected = null;
             this.parentNode.$showingSubMenu = null;
             _self.$submenu();
@@ -505,14 +505,14 @@ apf.item  = function(struct, tagName){
             
         clearTimeout(timer);
         
+        if (ps && ps.visible) {
+            ps.hide();
+            
+            if (_self.parentNode.$showingSubMenu == ps)
+                _self.parentNode.$showingSubMenu = null;
+        }
+        
         function submenu(){
-            if (ps && ps.visible) {
-                ps.hide();
-                
-                if (_self.parentNode.$showingSubMenu == ps)
-                    _self.parentNode.$showingSubMenu = null;
-            }
-    
             if (_self.submenu && _self.parentNode.opener 
               && _self.parentNode.opener.visible)
                 _self.$submenu();
@@ -532,7 +532,7 @@ apf.item  = function(struct, tagName){
         if (!this.submenu)
             return true;
 
-        var menu = self[this.submenu];
+        var menu = self[this.submenu] || this.submenu;
         if (!menu) {
             //#ifdef __DEBUG
             throw new Error(apf.formatErrorString(0, this,
@@ -686,7 +686,7 @@ apf.item  = function(struct, tagName){
         this.$ext = this.$getExternal(this.$isLeechingSkin
           ? "item" //this.type 
           : "main", null, function($ext){
-            var o = 'var o = apf.lookup(' + this.$uniqueId + '); if (o.disabled) return; o';
+            var o = 'var o = apf.lookup(' + this.$uniqueId + '); if (!o || o.disabled) return; o';
             $ext.setAttribute("onmouseup",   o + '.$up(event)');
             $ext.setAttribute("onmousemove", o + '.$over(event)');
             $ext.setAttribute("onmouseout",  o + '.$out(event)');

@@ -124,7 +124,7 @@ apf.datagrid = function(struct, tagName){
     this.bufferselect       = false;
     this.$useTable          = false;
     this.$focussable        = true;
-    this.$isWindowContainer = -1;
+    // this.$isWindowContainer = -1;
 
     this.$widthdiff      = 0;
     this.$defaultwidth   = 0;
@@ -568,7 +568,7 @@ apf.datagrid = function(struct, tagName){
             //cssRules[0][1] += ";margin-left:-" + vLeft + "px;";
             //cssRules[1][1] += ";margin-left:-" + vLeft + "px;";
             this.$cssRules.push(["." + this.$baseCSSname + " .row" + this.$uniqueId,
-                "padding-right:" + vLeft + "px;margin-right:-" + vLeft + "px"]);
+                "padding-right:" + vLeft + "px;"]); //margin-right:-" + vLeft + "px
         
             //headings and records have same padding-right
             this.$container.style.paddingRight  = (vLeft - 1) + "px";
@@ -716,7 +716,7 @@ apf.datagrid = function(struct, tagName){
             apf.setStyleClass(cell, h.$className);
             
             if (h.css)
-                apf.setStyleClass(cell, (apf.lm.compile(h.css))(xmlNode)); //@todo cashing of compiled function?
+                apf.setStyleClass(cell, (apf.lm.compile(h.css, {nostring: true}))(xmlNode)); //@todo cashing of compiled function?
             
             if (h.icon) {
                 var node = this.$getLayoutNode(cellType, "caption", oRow.appendChild(cell));
@@ -814,7 +814,7 @@ apf.datagrid = function(struct, tagName){
             cell = this.$getLayoutNode(h.tree ? "treecell" : "cell", "caption", nodeIter) || nodeIter;//htmlNodes[i].firstChild || 
 
             if (h.css)
-                apf.setStyleClass(cell, (apf.lm.compile(h.css))(xmlNode)); //@todo cashing of compiled function?
+                apf.setStyleClass(cell, (apf.lm.compile(h.css, {nostring: true}))(xmlNode)); //@todo cashing of compiled function?
 
             if (h.tree) {
                 // #ifdef __WITH_MULTICHECK
@@ -900,6 +900,9 @@ apf.datagrid = function(struct, tagName){
         if (!h.editor) //No editor specified
             return;
 
+        if (this.dispatchEvent("before.edit", {heading: h}) === false)
+            return;
+
         /*if (this.$lastEditor) {
             //this.$lastEditor[0].$blur();
             this.$lastEditor[0].setProperty("visible", false);
@@ -942,7 +945,7 @@ apf.datagrid = function(struct, tagName){
                     htmlNode : editParent,
                     style    : "position:relative;z-index:10000",
                     value    : "[{" + this.id + ".selected}::" 
-                        + (v = h.value).substr(1, v.length - 2)  //only xpath value's supported for now
+                        + (v = (h.match || h.value)).substr(1, v.length - 2)  //only xpath value's supported for now
                         + "]",
                     focussable : false
                 };
@@ -950,7 +953,7 @@ apf.datagrid = function(struct, tagName){
                 if (h.tree)
                     info.width = "100% - " + (editParent.offsetLeft + parseInt(this.$getOption("treecell", "editoroffset")));
                 else
-                    info.width = "100%-3";
+                    info.width = "100%";
                 
                 //@todo copy all non-known properties of the prop element
 
@@ -999,7 +1002,7 @@ apf.datagrid = function(struct, tagName){
                 oEditor.setAttribute("focussable", "true");
                 //delete oEditor.parentNode;
                 
-                oEditor.addEventListener("keydown", function(e){
+                oEditor.addEventListener("keyup", function(e){
                     if (e.keyCode == 13) {
                         hideEditor.call(_self);
                         _self.$focus();
@@ -1017,6 +1020,10 @@ apf.datagrid = function(struct, tagName){
                 oEditor.$executeAction = function(){
                     this.parentNode.$executeAction.apply(this.parentNode, arguments);
                 }
+                
+                this.dispatchEvent("editor.create", {
+                    editor : oEditor
+                });
             }
             else {
                 oEditor = this.$editors[h.$uniqueId + ":" + editor];
@@ -1034,7 +1041,7 @@ apf.datagrid = function(struct, tagName){
                 }
                 else {
                     oEditor.setAttribute("value", "[{" + this.id + ".selected}::" 
-                        + (v = h.value).substr(1, v.length - 2) 
+                        + (v = (h.match || h.value)).substr(1, v.length - 2) 
                         + "]");
                 }
 
@@ -1043,7 +1050,7 @@ apf.datagrid = function(struct, tagName){
                 
                 oEditor.setAttribute("width", h.tree 
                     ? "100% - " + (editParent.offsetLeft + parseInt(this.$getOption("treecell", "editoroffset"))) 
-                    : "100%-3");
+                    : "100%");
             }
             
             /*setTimeout(function(){
@@ -1249,23 +1256,23 @@ apf.datagrid = function(struct, tagName){
                 };
         }
         else {
-            if (apf.getStyle(this.$container, "overflowY") == "auto") {
-                this.$resize = function(){
-                    _self.$head.style.marginRight = 
-                      _self.$container.scrollHeight > _self.$container.offsetHeight 
-                        ? "16px" : "0";
-                }
+            // if (apf.getStyle(this.$container, "overflowY") == "auto") {
+            //     this.$resize = function(){
+            //         _self.$head.style.marginRight = 
+            //           _self.$container.scrollHeight > _self.$container.offsetHeight 
+            //             ? "16px" : "0";
+            //     }
                 
-                //#ifdef __WITH_LAYOUT
-                apf.layout.setRules(this.$ext, this.$uniqueId + "_datagrid",
-                    "var o = apf.all[" + this.$uniqueId + "];\
-                     if (o) o.$resize()");
-                apf.layout.queue(this.$ext);
-                //#endif
+            //     //#ifdef __WITH_LAYOUT
+            //     apf.layout.setRules(this.$ext, this.$uniqueId + "_datagrid",
+            //         "var o = apf.all[" + this.$uniqueId + "];\
+            //          if (o) o.$resize()");
+            //     apf.layout.queue(this.$ext);
+            //     //#endif
                 
-                this.addEventListener("afterload", this.$resize);
-                this.addEventListener("xmlupdate", this.$resize);
-            }
+            //     this.addEventListener("afterload", this.$resize);
+            //     this.addEventListener("xmlupdate", this.$resize);
+            // }
             
             this.$container.onscroll = 
                 function(){

@@ -41,7 +41,10 @@ apf.setStyleRule = function(name, type, value, stylesheet, win){
                 
                 for (var i = 0; i < rules.length; i++) {
                     if (rules.item(i).selectorText && rules.item(i).selectorText.toLowerCase() == name) {
-                        rules.item(i).style[type] = value;
+                        if (value.indexOf("!important") > -1)
+                            rules.item(i).style.cssText = type + ":" + value;
+                        else
+                            rules.item(i).style[type] = value;
                         return true;
                     }
                 }
@@ -240,7 +243,7 @@ apf.importStylesheet = function (def, win, stylesheet) {
                 stylesheet.insertRule(rule, 0);
             }
             catch (e) {
-                stylesheet = newStyleSheet();
+                stylesheet = new StyleSheet();
                 stylesheet.insertRule(rule, 0);
             }
         }

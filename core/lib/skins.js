@@ -373,7 +373,7 @@ apf.skins = {
             //@todo check here if it is really a url
             //#endif
 
-            oHtml.style.backgroundImage = "url(" + (iconPath || "")
+            oHtml.style.backgroundImage = "url(" + (strQuery.substr(0, 4) == "http" ? "" : iconPath || "")
                 + strQuery + ")";
         }
     }

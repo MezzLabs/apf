@@ -119,10 +119,10 @@ apf.MultiCheck = function(){
         this.$setStyleClass(apf.xmldb.getHtmlNode(xmlNode, this),
             "checked", ["partial"]);
         
-        this.dispatchEvent("aftercheck", {
-            list        : this.$checkedList,
-            xmlNode     : xmlNode
-        });
+        // this.dispatchEvent("aftercheck", {
+        //     list        : this.$checkedList,
+        //     xmlNode     : xmlNode
+        // });
     };
 
     /**

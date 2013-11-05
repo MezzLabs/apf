@@ -445,7 +445,8 @@ apf.tree = function(struct, tagName){
     };
     
     this.$updateNode = function(xmlNode, htmlNode){
-        if (!xmlNode) return;
+        if (!htmlNode) return;
+
         var elIcon  = this.$getLayoutNode("item", "icon", htmlNode),
             iconURL = this.$applyBindRule("icon", xmlNode);
         if (elIcon && iconURL) {
@@ -483,8 +484,10 @@ apf.tree = function(struct, tagName){
         var cssClass = this.$applyBindRule("css", xmlNode);
         if (cssClass || this.$dynCssClasses.length) {
             this.$setStyleClass(htmlNode, cssClass, this.$dynCssClasses); //@todo overhead!
-            if (cssClass && !this.$dynCssClasses.contains(cssClass))
-                this.$dynCssClasses.push(cssClass);
+            if (cssClass && !this.$dynCssClasses.contains(cssClass)) {
+                if (this.$dynCssClasses.indexOf(cssClass) == -1)
+                    this.$dynCssClasses.push(cssClass);
+            }
         }
         // #endif
     };

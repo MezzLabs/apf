@@ -259,7 +259,8 @@ apf.mergeXml = function(XMLRoot, parentNode, options){
         //clean parent
         nodes = parentNode.childNodes;
         for (i = nodes.length - 1; i >= 0; i--)
-            parentNode.removeChild(nodes[i]);
+            apf.xmldb.removeNode(nodes[i]);
+            // parentNode.removeChild(nodes[i]);
     }
 
     // #ifdef __WITH_VIRTUALVIEWPORT
@@ -591,7 +592,10 @@ apf.createNodeFromXpath = function(contextNode, xPath, addedNodes, forceNew){
     var xmlNode, foundpath = "", paths = xPath.replace(/('.*?')|(".*?")|\|/g, function(m, m1, m2){
         if (m1 || m2) return m1 || m2;
         return "-%-|-%-";
-    }).split("-%-|-%-")[0].split(/\/(?!\/)/);//.split("/");
+    }).split("-%-|-%-")[0].replace(/('.*?')|(".*?")|\/(?!\/)/g, function(m, m1, m2){
+        if (m1 || m2) return m1 || m2;
+        return "-%-|-%-";
+    }).split("-%-|-%-");
     if (!forceNew && (xmlNode = contextNode.selectSingleNode(xPath)))
         return xmlNode;
 

@@ -55,10 +55,10 @@ apf.StandardBinding = function(){
         //#ifdef __WITH_PROPERTY_BINDING
         var b, lrule, rule, bRules, bRule, value;
         if (b = this.$bindings) {
-	        for (rule in b) {
-	            lrule = rule.toLowerCase();
-	            if (this.$supportedProperties.indexOf(lrule) > -1) {
-	                bRule = (bRules = b[lrule]).length == 1 
+            for (rule in b) {
+                lrule = rule.toLowerCase();
+                if (this.$supportedProperties.indexOf(lrule) > -1) {
+                    bRule = (bRules = b[lrule]).length == 1 
                       ? bRules[0] 
                       : this.$getBindRule(lrule, xmlNode);
 

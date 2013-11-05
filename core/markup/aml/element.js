@@ -240,7 +240,7 @@ apf.AmlElement = function(struct, tagName){
             if (node.tagName == tagName || tagName == "*")
                 result.push(node);
 
-            if (!norecur && node.nodeType == 1)
+            if (!norecur && !node.$amlDestroyed && node.nodeType == 1)
                 result = result.concat(node.getElementsByTagName(tagName));
         }
         
@@ -479,9 +479,9 @@ apf.AmlElement = function(struct, tagName){
         if (options && options.clear)
             include.setAttribute("clear", true);
         include.options  = options;
-        include.callback = function(e){
+        include.callback = function(){
             _self.dispatchEvent("afteramlinserted", {src: amlDefNode});
-            options && options.callback && options.callback(e);
+            options && options.callback && options.callback();
             setTimeout(function(){
                 include.destroy(true, true);
             });

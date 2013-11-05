@@ -98,7 +98,7 @@ apf.clipboard.pasteSelection = function(amlNode, selected){
         apf.clipboard.clear();
     }
     
-    amlNode.selectList(copied || nodes);
+    // amlNode.selectList(copied || nodes);
 };
 //#endif
 

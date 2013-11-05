@@ -186,7 +186,7 @@ apf.BaseStateButtons = function(){
           || !o.normal && (o.minimized != lastState.minimized
             || o.maximized != lastState.maximized)) {
 
-            if (this.$lastheight) // this.aData && this.aData.hidden == 3 ??
+            if (this.$lastheight != null) // this.aData && this.aData.hidden == 3 ??
                 this.$ext.style.height = this.$lastheight;//(this.$lastheight - apf.getHeightDiff(this.$ext)) + "px";
 
             if (this.$lastpos) {
@@ -292,7 +292,7 @@ apf.BaseStateButtons = function(){
                 //#endif
 
                 if (!this.aData || !this.aData.minimize) {
-                    this.$lastheight = apf.getStyle(this.$ext, "height");//this.$ext.offsetHeight;
+                    this.$lastheight = this.$ext.style.height; //apf.getStyle(this.$ext, "height");//this.$ext.offsetHeight;
 
                     this.$ext.style.height = Math.max(0, this.collapsedHeight
                         - apf.getHeightDiff(this.$ext)) + "px";

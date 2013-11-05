@@ -139,6 +139,9 @@ apf.scrollbar = function(struct, tagName){
                 _self.$update();
                 
                 if (_self.showonscroll) { // && e.byUser) {
+                    if (!_self.scrolling)
+                        _self.$resize();
+                
                     _self.scrolling = true;
                     
                     clearTimeout(_self.$hideOnScrollTimer);
@@ -295,6 +298,8 @@ apf.scrollbar = function(struct, tagName){
             
             if (_self.$hideOnScrollControl)
                 _self.$hideOnScrollControl.stop();
+                
+            _self.$resize();
 
             apf.tween.single(_self.$ext, {
                 control : _self.$hideOnScrollControl = {},
@@ -611,6 +616,8 @@ apf.GuiElement.propHandlers["scrollbar"] = function(value) {
         
         var _self = this;
         this.$sharedScrollbar = self[name] || false;
+        if (!this.$sharedScrollbar)
+            return;
         
         function hasOnScroll(){
             return sb && apf.isTrue(sb.getAttribute("showonscroll"));

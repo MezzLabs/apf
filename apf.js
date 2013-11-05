@@ -126,6 +126,10 @@
     /* #else
     CDN            : "http://cdn.ajax.org/platform/",
     #endif */
+    
+    getPlugin : function(name){
+        return apf.nameserver.get("all", name);
+    },
 
     /**
      * Specifies whether apf is ready for DOM operations.
@@ -2314,35 +2318,6 @@
         //#ifdef __DEBUG
         apf.console.info("Initiating self destruct...");
         //#endif
-
-        this.isDestroying = true;
-
-        //#ifdef __WITH_POPUP
-        this.popup.destroy();
-        //#endif
-
-        var node,
-            i = 0,
-            l = this.all.length;
-        for (; i < l; i++) {
-            node = this.all[i];
-            if (node && node != exclude && node.destroy && !node.apf)
-                node.destroy(false);
-        }
-
-        //this.dispatchEvent("DOMNodeRemovedFromDocument", {});//@todo apf3.0
-        
-        for (i = 0, l = this.availHTTP.length; i < l; i++)
-            this.availHTTP[i] = null;
-        
-        this.availHTTP.length = 0;
-
-        //#ifdef __WITH_XMLDATABASE
-        if (apf.xmldb)
-            apf.xmldb.unbind(apf.window);
-        //#endif
-
-        this.isDestroying = false;
     }
 };
 

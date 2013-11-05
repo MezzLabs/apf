@@ -697,7 +697,7 @@ apf.BaseTree = function(){
                     + this.$uniqueId), null, true);
 
             //if no sibling fix parent
-            if (!this.emptyMessage && xmlNode.parentNode.selectNodes(this.each).length == 1)
+            if (!this.emptyMessage && xmlNode.parentNode && xmlNode.parentNode.selectNodes(this.each).length == 1)
                 this.$fixItem(xmlNode.parentNode, this.$findHtmlNode(
                     xmlNode.parentNode.getAttribute(apf.xmldb.xmlIdTag)
                     + "|" + this.$uniqueId), null, false, true);
@@ -873,9 +873,14 @@ apf.BaseTree = function(){
             this.$setLoadStatus(xmlNode, "loading");
 
             var _self = this;
-            (this.$timers || (this.$timers = {}))[xmlNode.getAttribute(apf.xmldb.xmlIdTag)] = $setTimeout(function(){;
+            //(this.$timers || (this.$timers = {}))[xmlNode.getAttribute(apf.xmldb.xmlIdTag)] = $setTimeout(function(){;
                 _self.$setStyleClass(apf.xmldb.getHtmlNode(xmlNode, _self), "loading");
-            }, 100);
+            //}, 100);
+
+            if (this.dispatchEvent("beforeinsert", {
+                xmlNode: xmlNode
+            }) === false)
+                return;
 
             if (rule.get) {
                 // #ifdef __WITH_OFFLINE_TRANSACTIONS

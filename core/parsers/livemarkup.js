@@ -1641,13 +1641,15 @@ apf.lm = new (function(){
                     : ((c_xpathmode == 1 || c_xpathmode == 3) ? cc_fc_o : cc_f_o));
             o[ol++] = cc_f_c;
         }
+        
+        var code = "with(apf.nameserver.lookup.all){\n" + o.join("") + "\n}";
 
         if (cfg.nothrow) {
-            f = apf.lm_exec.compile(o.join(""));
+            f = apf.lm_exec.compile(code);
         }
         else {
             try {
-                f = apf.lm_exec.compile(o.join(""));
+                f = apf.lm_exec.compile(code);
             }
             catch(e){
                 if (!apf.isIE) {
