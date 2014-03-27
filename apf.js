@@ -302,7 +302,9 @@
             var ua       = navigator.userAgent.toLowerCase(),
                 platform = navigator.platform.toLowerCase(),
                 UA       = ua.match(/(opera|ie|firefox|chrome|version)[\s\/:]([\w\d\.]+)?.*?(safari|version[\s\/:]([\w\d\.]+)|$)/) || [null, 'unknown', 0],
-                mode     = UA[1] == 'ie' && document.documentMode;
+            if (ua.match(/Trident\/.*rv:([0-9]{1,}[\.0-9]{0,})/))
+                UA = ["ie", null, Regexp.$2];
+            var mode = UA[1] == 'ie' && document.documentMode;
 
             var b = {
 
